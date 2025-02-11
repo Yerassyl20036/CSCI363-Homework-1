@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.BookAlreadyBorrowedException;
+import exceptions.BookNotFoundException;
+
 public class Library {
     private List<Book> books;
     private List<User> users;
@@ -46,8 +49,8 @@ public class Library {
                 return book;
             }
         }
-        return null;
-    }
+        throw new BookNotFoundException("Book with ISBN " + isbn + " not found.");
+    }   
 
     public boolean editBook(String isbn, String newTitle, String newAuthor, String newCondition) {
         if (loggedInUser != null && loggedInUser.getRole().equals("ADMIN")) {
@@ -64,8 +67,11 @@ public class Library {
 
     public boolean borrowBook(String isbn) {
         if (loggedInUser != null && loggedInUser.getRole().equals("MEMBER")) {
-            Book book = findBook(isbn);
-            if (book != null && loggedInUser.borrowBook(book)) {
+            Book book = findBook(isbn); // This will throw BookNotFoundException if book doesn't exist
+            if (!book.isAvailable()) {
+                throw new BookAlreadyBorrowedException("Book with ISBN " + isbn + " is already borrowed.");
+            }
+            if (loggedInUser.borrowBook(book)) {
                 transactions.add(new Transaction(loggedInUser, book));
                 return true;
             }
