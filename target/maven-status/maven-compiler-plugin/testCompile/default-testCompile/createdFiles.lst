@@ -1,3 +1,6 @@
 ParameterizedTestExample.class
+UserTest.class
 LibraryTest.class
 RepeatableTestExample.class
+TransactionTest.class
+BookTest.class
