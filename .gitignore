@@ -1,0 +1,24 @@
+# Ignore all compiled Java classes
+target/
+target/classes/
+target/test-classes/
+target/generated-sources/
+target/generated-test-sources/
+target/surefire-reports/
+target/maven-archiver/
+target/maven-status/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore IntelliJ IDEA files
+.idea/
+*.iml
+
+# Ignore VS Code settings (optional)
+.vscode/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
