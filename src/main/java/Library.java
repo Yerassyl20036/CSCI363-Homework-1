@@ -90,4 +90,8 @@ public class Library {
     public List<Transaction> getTransactions() {
         return transactions;
     }
+
+    public List<Book> getBooks(){
+        return this.books;
+    }
 }

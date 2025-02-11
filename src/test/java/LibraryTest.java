@@ -1,4 +1,9 @@
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,5 +81,26 @@ public class LibraryTest {
     @Test
     void testLoginFailure() {
         assertFalse(library.loginUser("Alice", "wrongpass"), "Login should fail with incorrect password.");
+    }
+
+
+ @Test
+    void testAddMultipleBooksAndVerify() {
+        library.loginUser("AdminUser", "adminpass");
+
+        // Add multiple books
+        library.addBook("Clean Code", "Robert C. Martin", "1111", "New");
+        library.addBook("Design Patterns", "Erich Gamma", "2222", "Used");
+        library.addBook("Refactoring", "Martin Fowler", "3333", "New");
+
+        // Retrieve books from the library
+        List<Book> bookList = library.getBooks();
+        String[] expectedTitles = {"Java Programming", "Clean Code", "Design Patterns", "Refactoring"};
+        String[] actualTitles = bookList.stream().map(Book::getTitle).toArray(String[]::new);
+
+        // Verify all books are added correctly
+        assertArrayEquals(expectedTitles, actualTitles, "Books in the library should match expected list.");
+
+        library.logoutUser();
     }
 }
