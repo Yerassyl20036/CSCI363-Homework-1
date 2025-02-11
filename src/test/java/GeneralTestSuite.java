@@ -9,5 +9,5 @@ import org.junit.platform.suite.api.Suite;
     TransactionTest.class
 })
 public class GeneralTestSuite {
-    // Runs all core functionality tests
+    
 }

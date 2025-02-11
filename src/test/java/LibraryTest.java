@@ -1,6 +1,8 @@
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import exceptions.BookNotFoundException;
+import exceptions.BookAlreadyBorrowedException;
 
 public class LibraryTest {
     private Library library;
@@ -8,15 +10,28 @@ public class LibraryTest {
     @BeforeEach
     void setup() {
         library = new Library();
-
-        // Registering an admin and a member
         library.registerUser("AdminUser", "adminpass", "ADMIN", 5);
         library.registerUser("Alice", "password123", "MEMBER", 2);
-
-        // Logging in as admin to add a book
         library.loginUser("AdminUser", "adminpass");
         library.addBook("Java Programming", "John Doe", "1234567890", "New");
         library.logoutUser();
+    }
+
+    @Test
+    void testFindNonExistentBookThrowsException() {
+        assertThrows(BookNotFoundException.class, () -> {
+            library.findBook("9999");
+        }, "Searching for a non-existent book should throw BookNotFoundException.");
+    }
+
+    @Test
+    void testBorrowAlreadyBorrowedBookThrowsException() {
+        library.loginUser("Alice", "password123");
+        library.borrowBook("1234567890"); 
+
+        assertThrows(BookAlreadyBorrowedException.class, () -> {
+            library.borrowBook("1234567890"); 
+        }, "Borrowing an already borrowed book should throw BookAlreadyBorrowedException.");
     }
 
     @Test
