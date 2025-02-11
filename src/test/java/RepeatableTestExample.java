@@ -1,13 +1,19 @@
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.RepeatedTest;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class RepeatableTestExample {
-    private Library library;
+    private static  Library library;
+
+    @BeforeAll
+    static void setup(){
+        library = new Library();
+        library.registerUser("Alice", "password123", "MEMBER", 2);
+
+    }
 
     @RepeatedTest(5)
     void testBorrowBookRepeatedly() {
-        library = new Library();
-        library.registerUser("Alice", "password123", "MEMBER", 2);
         library.loginUser("Alice", "password123");
 
         // Adding a book as an admin
