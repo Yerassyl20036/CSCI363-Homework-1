@@ -1,6 +1,6 @@
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import exceptions.BookAlreadyBorrowedException;
 import exceptions.BookNotFoundException;
 
@@ -52,22 +52,9 @@ public class Library {
         throw new BookNotFoundException("Book with ISBN " + isbn + " not found.");
     }   
 
-    public boolean editBook(String isbn, String newTitle, String newAuthor, String newCondition) {
-        if (loggedInUser != null && loggedInUser.getRole().equals("ADMIN")) {
-            Book book = findBook(isbn);
-            if (book != null) {
-                book.setTitle(newTitle);
-                book.setAuthor(newAuthor);
-                book.setCondition(newCondition);
-                return true;
-            }
-        }
-        return false; // Only admins can edit books
-    }
-
     public boolean borrowBook(String isbn) {
         if (loggedInUser != null && loggedInUser.getRole().equals("MEMBER")) {
-            Book book = findBook(isbn); // This will throw BookNotFoundException if book doesn't exist
+            Book book = findBook(isbn);
             if (!book.isAvailable()) {
                 throw new BookAlreadyBorrowedException("Book with ISBN " + isbn + " is already borrowed.");
             }
@@ -79,25 +66,37 @@ public class Library {
         return false;
     }
 
-    public boolean returnBook(String isbn) {
-        if (loggedInUser != null) {
-            Book book = findBook(isbn);
-            if (book != null && loggedInUser.returnBook(book)) {
-                transactions.stream()
-                    .filter(t -> !t.isReturned() && t.getUser() == loggedInUser && t.getBook() == book)
-                    .findFirst()
-                    .ifPresent(Transaction::markReturned);
-                return true;
+    public String returnBook(String isbn, LocalDateTime dueDate) {
+        if (loggedInUser == null) {
+            return "Error: No user logged in.";
+        }
+
+        Book book = findBook(isbn);
+        if (book == null) {
+            return "Error: Book not found.";
+        }
+
+        for (Transaction transaction : transactions) {
+            if (!transaction.isReturned() && transaction.getUser() == loggedInUser && transaction.getBook() == book) {
+                transaction.markReturned();
+                book.setAvailable(true);
+
+                double lateFee = transaction.calculateLateFee(dueDate);
+                if (lateFee > 0) {
+                    loggedInUser.addFine(lateFee);
+                    return "Book returned successfully. Late fee: $" + lateFee;
+                }
+                return "Book returned successfully.";
             }
         }
-        return false;
+        return "Error: No matching transaction found for this book.";
     }
 
     public List<Transaction> getTransactions() {
         return transactions;
     }
 
-    public List<Book> getBooks(){
-        return this.books;
+    public List<Book> getBooks() {
+        return books;
     }
 }

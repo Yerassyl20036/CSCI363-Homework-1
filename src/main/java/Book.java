@@ -1,5 +1,5 @@
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Book {
     private String title;
@@ -36,6 +36,10 @@ public class Book {
 
     public boolean isAvailable() {
         return isAvailable;
+    }
+
+    public void setAvailable(boolean available) { 
+        this.isAvailable = available;
     }
 
     public String getCondition() {

@@ -1,3 +1,5 @@
+import java.time.LocalDateTime;
+
 public class Main {
     public static void main(String[] args) {
         Library library = new Library();
@@ -25,7 +27,11 @@ public class Main {
 
         // Logging in as Alice to return her book
         library.loginUser("Alice", "password123");
-        library.returnBook("1234");
+
+        // Fix: Provide a due date (assume due date is 10 days after borrowing)
+        LocalDateTime dueDate = LocalDateTime.now().minusDays(10);  
+        library.returnBook("1234", dueDate);
+
         library.logoutUser();
 
         // Printing transactions

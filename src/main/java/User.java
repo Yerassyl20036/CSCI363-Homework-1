@@ -7,6 +7,7 @@ public class User {
     private String role;
     private int maxBorrowLimit;
     private List<Book> borrowedBooks;
+    private double outstandingFines; // NEW FIELD
 
     public User(String username, String password, String role, int maxBorrowLimit) {
         this.username = username;
@@ -14,6 +15,7 @@ public class User {
         this.role = role;
         this.maxBorrowLimit = maxBorrowLimit;
         this.borrowedBooks = new ArrayList<>();
+        this.outstandingFines = 0.0; // Initialize fines
     }
 
     public String getUsername() {
@@ -52,5 +54,14 @@ public class User {
 
     public List<Book> getBorrowedBooks() {
         return borrowedBooks;
+    }
+
+    // NEW: Method to track fines
+    public void addFine(double amount) {
+        this.outstandingFines += amount;
+    }
+
+    public double getOutstandingFines() {
+        return outstandingFines;
     }
 }

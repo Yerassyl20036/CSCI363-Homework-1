@@ -1,4 +1,5 @@
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
 public class Transaction {
@@ -6,6 +7,7 @@ public class Transaction {
     private Book book;
     private LocalDateTime borrowDate;
     private LocalDateTime returnDate;
+    private static final double LATE_FEE_PER_DAY = 1.0; 
 
     public Transaction(User user, Book book) {
         this.user = user;
@@ -23,6 +25,15 @@ public class Transaction {
 
     public boolean isReturned() {
         return returnDate != null;
+    }
+
+    public double calculateLateFee(LocalDateTime dueDate) {
+        if (returnDate == null || returnDate.isBefore(dueDate)) {
+            return 0.0; 
+        }
+
+        long daysLate = ChronoUnit.DAYS.between(dueDate, returnDate);
+        return daysLate * LATE_FEE_PER_DAY;
     }
 
     public String getDetails() {
