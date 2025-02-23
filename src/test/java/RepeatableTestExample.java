@@ -27,7 +27,7 @@ public class RepeatableTestExample {
         
         // Fix: Provide a due date (assume due date was 10 days ago)
         LocalDateTime dueDate = LocalDateTime.now().minusDays(10);
-        library.returnBook("1234", dueDate);
+        library.returnBook("1234", dueDate, false);
         library.logoutUser();
     }
 }

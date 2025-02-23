@@ -28,7 +28,7 @@ public class LibraryTest {
 
         // Fix: Provide a due date (assume due date was 10 days ago)
         LocalDateTime dueDate = LocalDateTime.now().minusDays(10);
-        assertEquals("Book returned successfully.", library.returnBook("1234567890", dueDate));
+        assertEquals("Book returned successfully.", library.returnBook("1234567890", dueDate, false));
 
         library.logoutUser();
     }

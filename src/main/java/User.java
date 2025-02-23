@@ -64,4 +64,9 @@ public class User {
     public double getOutstandingFines() {
         return outstandingFines;
     }
+
+    // FIX: Method to retrieve max borrow limit
+    public int getMaxBorrowLimit() {
+        return maxBorrowLimit;
+    }
 }
