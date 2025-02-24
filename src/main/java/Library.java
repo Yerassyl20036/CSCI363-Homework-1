@@ -58,65 +58,67 @@ public class Library {
     }   
 
     public boolean borrowBook(String isbn) {
-        if (loggedInUser != null && loggedInUser.getRole().equals("MEMBER")) {
-            Book book = findBook(isbn);
-            if (!book.isAvailable()) {
-                throw new BookAlreadyBorrowedException("Book with ISBN " + isbn + " is already borrowed.");
-            }
-            if (loggedInUser.borrowBook(book)) {
-                transactions.add(new Transaction(loggedInUser, book));
-                return true;
-            }
+        if (loggedInUser == null || !loggedInUser.getRole().equals("MEMBER")) {
+            return false; 
         }
-        return false;
-    }
+    
+        Book book = findBook(isbn);
+        if (!book.isAvailable()) {
+            throw new BookAlreadyBorrowedException("Book with ISBN " + isbn + " is already borrowed.");
+        }
+    
+        if (loggedInUser.borrowBook(book)) {
+            book.setAvailable(false);  // ✅ Ensure the book is marked as unavailable when borrowed
+            transactions.add(new Transaction(loggedInUser, book));
+            return true;
+        }
+    
+        return false; 
+    }    
 
     public String returnBook(String isbn, LocalDateTime dueDate, boolean isDamaged) {
         if (loggedInUser == null) {
             return "Error: No user logged in.";
         }
     
-        try {
-            Book book = findBook(isbn);
-            boolean transactionExists = false;
+        Book book = findBook(isbn);
+        boolean transactionExists = false;
     
-            for (Transaction transaction : transactions) {
-                if (!transaction.isReturned() && transaction.getUser() == loggedInUser && transaction.getBook() == book) {
-                    transactionExists = true;
-                    transaction.markReturned();
-                    book.setAvailable(true);
+        for (Transaction transaction : transactions) {
+            if (!transaction.isReturned() && transaction.getUser() == loggedInUser && transaction.getBook() == book) {
+                transactionExists = true;
+                transaction.markReturned();
+                
+                book.setAvailable(true);  
     
-                    double lateFee = transaction.calculateLateFee(dueDate);
-                    boolean lateFeeApplied = lateFee > 0;
-                    boolean damageFeeApplied = isDamaged;
-                    
-                    if (lateFeeApplied) {
-                        loggedInUser.addFine(lateFee);
-                    }
-                    if (damageFeeApplied) {
-                        loggedInUser.addFine(20.0);
-                    }
+                double lateFee = transaction.calculateLateFee(dueDate);
+                boolean lateFeeApplied = lateFee > 0;
+                boolean damageFeeApplied = isDamaged;
     
-                    boolean isBanned = loggedInUser.getOutstandingFines() > 50;
-    
-                    // Build return message dynamically
-                    StringBuilder response = new StringBuilder("Book returned successfully.");
-                    if (lateFeeApplied) response.append(" Late fee: $").append(lateFee).append(".");
-                    if (damageFeeApplied) response.append(" Damage fee: $20 applied.");
-                    if (isBanned) response.append(" You have too many late returns and are now banned.");
-    
-                    return response.toString();
+                if (lateFeeApplied) {
+                    loggedInUser.addFine(lateFee);
                 }
-            }
+                if (damageFeeApplied) {
+                    loggedInUser.addFine(20.0);
+                }
     
-            if (!transactionExists) {
-                return "Error: No matching transaction found for this book.";
-            }
+                boolean isBanned = loggedInUser.getOutstandingFines() > 50;
     
-        } catch (BookNotFoundException e) {
-            return "Error: Book not found.";
+                // Build return message dynamically
+                StringBuilder response = new StringBuilder("Book returned successfully.");
+                if (lateFeeApplied) response.append(" Late fee: $").append(lateFee).append(".");
+                if (damageFeeApplied) response.append(" Damage fee: $20 applied.");
+                if (isBanned) response.append(" You have too many late returns and are now banned.");
+    
+                return response.toString();
+            }
         }
-        
+    
+        if (!transactionExists) {
+            book.setAvailable(true);
+            return "Error: No matching transaction found for this book.";
+        }
+    
         return "Unexpected error: Book return process failed.";
     }
     

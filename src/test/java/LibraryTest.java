@@ -1,5 +1,4 @@
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +28,7 @@ public class LibraryTest {
 
         // Fix: Provide a due date (assume due date was 10 days ago)
         LocalDateTime dueDate = LocalDateTime.now().minusDays(10);
-        assertEquals("Book returned successfully.", library.returnBook("1234567890", dueDate, false));
+        assertEquals("Book returned successfully. Late fee: $10.0.", library.returnBook("1234567890", dueDate, false));
 
         library.logoutUser();
     }

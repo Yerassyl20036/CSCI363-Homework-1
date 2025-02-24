@@ -3,6 +3,8 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import exceptions.BookNotFoundException;
+
 public class WhiteBoxTests {
     private Library library;
 
@@ -91,8 +93,10 @@ public class WhiteBoxTests {
     @Test
     void testReturnBookNotFound() { // P10
         LocalDateTime dueDate = LocalDateTime.now();
-        String result = library.returnBook("9999", dueDate, false);
-        assertEquals("Error: Book not found.", result);
+        
+        assertThrows(BookNotFoundException.class, () -> {
+            library.returnBook("9999", dueDate, false);
+        });
     }
 
     @Test
