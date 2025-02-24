@@ -1,10 +1,13 @@
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import exceptions.BookAlreadyBorrowedException;
 import exceptions.BookNotFoundException;
 
 public class Library {
+
     private List<Book> books;
     private List<User> users;
     private List<Transaction> transactions;
@@ -30,11 +33,10 @@ public class Library {
         }
         throw new IllegalArgumentException("User not found");
     }
-    
 
     public User getLoggedInUser() {
         return loggedInUser;
-    }    
+    }
 
     public void logoutUser() {
         loggedInUser = null;
@@ -45,7 +47,7 @@ public class Library {
             books.add(new Book(title, author, isbn, condition));
             return true;
         }
-        return false; 
+        return false;
     }
 
     public Book findBook(String isbn) {
@@ -55,91 +57,97 @@ public class Library {
             }
         }
         throw new BookNotFoundException("Book with ISBN " + isbn + " not found.");
-    }   
+    }
 
     public boolean borrowBook(String isbn) {
         if (loggedInUser == null || !loggedInUser.getRole().equals("MEMBER")) {
-            return false; 
+            return false;
         }
-    
+
         Book book = findBook(isbn);
         if (!book.isAvailable()) {
             throw new BookAlreadyBorrowedException("Book with ISBN " + isbn + " is already borrowed.");
         }
-    
+
         if (loggedInUser.borrowBook(book)) {
-            book.setAvailable(false);  // ✅ Ensure the book is marked as unavailable when borrowed
+            book.setAvailable(false);  // Ensure the book is marked as unavailable when borrowed
             transactions.add(new Transaction(loggedInUser, book));
             return true;
         }
-    
-        return false; 
-    }    
+
+        return false;
+    }
 
     public String returnBook(String isbn, LocalDateTime dueDate, boolean isDamaged) {
         if (loggedInUser == null) {
             return "Error: No user logged in.";
         }
-    
+
         Book book = findBook(isbn);
         boolean transactionExists = false;
-    
+
         for (Transaction transaction : transactions) {
             if (!transaction.isReturned() && transaction.getUser() == loggedInUser && transaction.getBook() == book) {
                 transactionExists = true;
                 transaction.markReturned();
-                
-                book.setAvailable(true);  
-    
+
+                book.setAvailable(true);
+
                 double lateFee = transaction.calculateLateFee(dueDate);
                 boolean lateFeeApplied = lateFee > 0;
                 boolean damageFeeApplied = isDamaged;
-    
+
                 if (lateFeeApplied) {
                     loggedInUser.addFine(lateFee);
                 }
                 if (damageFeeApplied) {
                     loggedInUser.addFine(20.0);
                 }
-    
+
                 boolean isBanned = loggedInUser.getOutstandingFines() > 50;
-    
+
                 // Build return message dynamically
                 StringBuilder response = new StringBuilder("Book returned successfully.");
-                if (lateFeeApplied) response.append(" Late fee: $").append(lateFee).append(".");
-                if (damageFeeApplied) response.append(" Damage fee: $20 applied.");
-                if (isBanned) response.append(" You have too many late returns and are now banned.");
-    
+                if (lateFeeApplied) {
+                    response.append(" Late fee: $").append(lateFee).append(".");
+                }
+                if (damageFeeApplied) {
+                    response.append(" Damage fee: $20 applied.");
+                }
+                if (isBanned) {
+                    response.append(" You have too many late returns and are now banned.");
+                }
+
                 return response.toString();
             }
         }
-    
+
         if (!transactionExists) {
             book.setAvailable(true);
             return "Error: No matching transaction found for this book.";
         }
-    
+
         return "Unexpected error: Book return process failed.";
     }
-    
+
     public String reserveBook(String isbn) {
         if (loggedInUser == null) {
             return "Error: No user logged in.";
         }
-    
+
         Book book = findBook(isbn);
         if (book == null) {
             return "Error: Book not found.";
         }
-    
+
         if (!book.isAvailable()) {
             return "Error: Book is already borrowed.";
         }
-    
+
         if (loggedInUser.getBorrowedBooks().size() >= loggedInUser.getMaxBorrowLimit()) {
             return "Error: Borrow limit reached.";
         }
-    
+
         transactions.add(new Transaction(loggedInUser, book));
         book.setAvailable(false);
         return "Book reserved successfully.";

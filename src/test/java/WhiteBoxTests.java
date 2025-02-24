@@ -1,24 +1,28 @@
-import static org.junit.jupiter.api.Assertions.*;
+
 import java.time.LocalDateTime;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import exceptions.BookNotFoundException;
 
 public class WhiteBoxTests {
+
     private Library library;
 
     @BeforeEach
     void setup() {
         library = new Library();
         library.registerUser("AdminUser", "adminpass", "ADMIN", 10);
-        library.loginUser("AdminUser", "adminpass"); // ✅ Login as ADMIN
+        library.loginUser("AdminUser", "adminpass"); //  Login as ADMIN
         library.addBook("Java Programming", "John Doe", "1234", "New"); // ✅ Successfully add book
         library.logoutUser();
 
         library.registerUser("Alice", "password123", "MEMBER", 2);
-        library.loginUser("Alice", "password123"); // ✅ Switch to MEMBER
-        library.borrowBook("1234"); 
+        library.loginUser("Alice", "password123"); // Switch to MEMBER
+        library.borrowBook("1234");
     }
 
     @Test
@@ -30,7 +34,7 @@ public class WhiteBoxTests {
 
     @Test
     void testReturnBookNoFeesBanned() { // P2
-        library.getLoggedInUser().addFine(60); // ✅ Fixed
+        library.getLoggedInUser().addFine(60);
         LocalDateTime dueDate = LocalDateTime.now();
         String result = library.returnBook("1234", dueDate, false);
         assertTrue(result.contains("banned"));
@@ -45,7 +49,7 @@ public class WhiteBoxTests {
 
     @Test
     void testReturnBookDamageFeeAndBan() { // P4
-        library.getLoggedInUser().addFine(60); // ✅ Fixed
+        library.getLoggedInUser().addFine(60);
         LocalDateTime dueDate = LocalDateTime.now();
         String result = library.returnBook("1234", dueDate, true);
         assertTrue(result.contains("banned") && result.contains("Damage fee"));
@@ -60,7 +64,7 @@ public class WhiteBoxTests {
 
     @Test
     void testReturnBookLateFeeAndBan() { // P6
-        library.getLoggedInUser().addFine(60); // ✅ Fixed
+        library.getLoggedInUser().addFine(60);
         LocalDateTime dueDate = LocalDateTime.now().minusDays(5);
         String result = library.returnBook("1234", dueDate, false);
         assertTrue(result.contains("banned") && result.contains("Late fee"));
@@ -75,7 +79,7 @@ public class WhiteBoxTests {
 
     @Test
     void testReturnBookLateDamageFeeAndBan() { // P8
-        library.getLoggedInUser().addFine(60); // ✅ Fixed
+        library.getLoggedInUser().addFine(60);
         LocalDateTime dueDate = LocalDateTime.now().minusDays(5);
         String result = library.returnBook("1234", dueDate, true);
         assertTrue(result.contains("banned") && result.contains("Late fee") && result.contains("Damage fee"));
@@ -93,7 +97,7 @@ public class WhiteBoxTests {
     @Test
     void testReturnBookNotFound() { // P10
         LocalDateTime dueDate = LocalDateTime.now();
-        
+
         assertThrows(BookNotFoundException.class, () -> {
             library.returnBook("9999", dueDate, false);
         });
