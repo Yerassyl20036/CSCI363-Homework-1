@@ -21,15 +21,20 @@ public class Library {
         users.add(new User(username, password, role, maxBorrowLimit));
     }
 
-    public boolean loginUser(String username, String password) {
+    public void loginUser(String username, String password) {
         for (User user : users) {
             if (user.getUsername().equals(username) && user.authenticate(password)) {
                 loggedInUser = user;
-                return true;
+                return;
             }
         }
-        return false;
+        throw new IllegalArgumentException("User not found");
     }
+    
+
+    public User getLoggedInUser() {
+        return loggedInUser;
+    }    
 
     public void logoutUser() {
         loggedInUser = null;
@@ -71,36 +76,48 @@ public class Library {
             return "Error: No user logged in.";
         }
     
-        Book book = findBook(isbn);
-        if (book == null) {
+        try {
+            Book book = findBook(isbn);
+            boolean transactionExists = false;
+    
+            for (Transaction transaction : transactions) {
+                if (!transaction.isReturned() && transaction.getUser() == loggedInUser && transaction.getBook() == book) {
+                    transactionExists = true;
+                    transaction.markReturned();
+                    book.setAvailable(true);
+    
+                    double lateFee = transaction.calculateLateFee(dueDate);
+                    boolean lateFeeApplied = lateFee > 0;
+                    boolean damageFeeApplied = isDamaged;
+                    
+                    if (lateFeeApplied) {
+                        loggedInUser.addFine(lateFee);
+                    }
+                    if (damageFeeApplied) {
+                        loggedInUser.addFine(20.0);
+                    }
+    
+                    boolean isBanned = loggedInUser.getOutstandingFines() > 50;
+    
+                    // Build return message dynamically
+                    StringBuilder response = new StringBuilder("Book returned successfully.");
+                    if (lateFeeApplied) response.append(" Late fee: $").append(lateFee).append(".");
+                    if (damageFeeApplied) response.append(" Damage fee: $20 applied.");
+                    if (isBanned) response.append(" You have too many late returns and are now banned.");
+    
+                    return response.toString();
+                }
+            }
+    
+            if (!transactionExists) {
+                return "Error: No matching transaction found for this book.";
+            }
+    
+        } catch (BookNotFoundException e) {
             return "Error: Book not found.";
         }
-    
-        for (Transaction transaction : transactions) {
-            if (!transaction.isReturned() && transaction.getUser() == loggedInUser && transaction.getBook() == book) {
-                transaction.markReturned();
-                book.setAvailable(true);
-    
-                double lateFee = transaction.calculateLateFee(dueDate);
-                if (lateFee > 0) {
-                    loggedInUser.addFine(lateFee);
-                }
-    
-                // New condition: Damage Fee
-                if (isDamaged) {
-                    loggedInUser.addFine(20.0);
-                    return "Book returned successfully, but a damage fee of $20 was charged.";
-                }
-    
-                // New condition: Multiple Late Returns -> Ban User
-                if (loggedInUser.getOutstandingFines() > 50) {
-                    return "Book returned successfully. You have too many late returns and are now banned.";
-                }
-    
-                return "Book returned successfully.";
-            }
-        }
-        return "Error: No matching transaction found for this book.";
+        
+        return "Unexpected error: Book return process failed.";
     }
     
     public String reserveBook(String isbn) {

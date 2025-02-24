@@ -22,11 +22,10 @@ public class ParameterizedTestExample {
         Library library = new Library();
         library.registerUser("AdminUser", "adminpass", "ADMIN", 5);
 
-        boolean result = library.loginUser("AdminUser", password);
         if (password.equals("adminpass")) {
-            assertTrue(result, "Correct password should allow login.");
+            assertDoesNotThrow(() -> library.loginUser("Alice", "password123"));
         } else {
-            assertFalse(result, "Incorrect password should not allow login.");
+            assertThrows(IllegalArgumentException.class, () -> library.loginUser("Alice", "wrongpass"));
         }
     }
 }

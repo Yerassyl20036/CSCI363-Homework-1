@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import exceptions.BookAlreadyBorrowedException;
 import exceptions.BookNotFoundException;
+import java.lang.IllegalArgumentException;
 
 public class LibraryTest {
     private Library library;
@@ -78,12 +79,12 @@ public class LibraryTest {
 
     @Test
     void testLoginSuccess() {
-        assertTrue(library.loginUser("Alice", "password123"));
+        assertDoesNotThrow(() -> library.loginUser("Alice", "password123"));
         library.logoutUser();
     }
 
     @Test
     void testLoginFailure() {
-        assertFalse(library.loginUser("Alice", "wrongpass"));
+        assertThrows(IllegalArgumentException.class, () -> library.loginUser("Alice", "wrongpass"));
     }
 }
