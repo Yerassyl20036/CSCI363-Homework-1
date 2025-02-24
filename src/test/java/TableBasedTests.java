@@ -1,3 +1,5 @@
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import exceptions.BookAlreadyBorrowedException;
@@ -9,7 +11,7 @@ public class TableBasedTests {
     @BeforeEach
     void setup() {
         library = new Library();
-        library.registerUser("Alice", "password123", "MEMBER", 1);
+        library.registerUser("Alice", "password123", "MEMBER", 5);
         library.registerUser("Admin", "adminpass", "ADMIN", 5);
 
         // Admin logs in to add books
@@ -30,6 +32,19 @@ public class TableBasedTests {
         };
 
         printTable(results);
+    }
+
+    @Test
+    void testReturnBookWithFeesTableBased() {
+        String[][] results = {
+            {"Test ID", "Late Submission", "Is Damaged", "Expected Result", "Actual Result"},
+            {"1", "No", "No", "Pass - No fees applied", runReturnBookFeesTest(false, false)},
+            {"2", "Yes", "No", "Pass - Late fee applied", runReturnBookFeesTest(true, false)},
+            {"3", "No", "Yes", "Pass - Damage fee applied", runReturnBookFeesTest(false, true)},
+            {"4", "Yes", "Yes", "Pass - Late + Damage fee applied", runReturnBookFeesTest(true, true)}
+        };
+
+        printTable2(results);
     }
 
     private String runBorrowBookTest(boolean userLoggedIn, String role, boolean bookAvailable, boolean borrowLimitReached) {
@@ -105,6 +120,44 @@ public class TableBasedTests {
         for (String[] row : data) {
             System.out.println(String.format("%-10s %-15s %-10s %-15s %-20s %-35s %-35s",
                 row[0], row[1], row[2], row[3], row[4], row[5], row[6]));
+        }
+    }
+
+    private String runReturnBookFeesTest(boolean lateReturn, boolean damaged) {
+        library.logoutUser();
+        library.getBooks().clear();
+        library.getTransactions().clear();
+
+        // Ensure book exists
+        library.loginUser("Admin", "adminpass");
+        library.addBook("Java Programming", "John Doe", "1234", "New");
+        library.logoutUser();
+
+        // User logs in and borrows the book
+        library.loginUser("Alice", "password123");
+        library.borrowBook("1234");
+
+        // Define due date based on late submission flag
+        LocalDateTime dueDate = lateReturn ? LocalDateTime.now().minusDays(5) : LocalDateTime.now();
+        String result = library.returnBook("1234", dueDate, damaged);
+        // System.out.println("DEBUG: Late=" + lateReturn + ", Damaged=" + damaged + " → " + result);
+        
+        if (!lateReturn && !damaged) {
+            return result.contains("Book returned successfully.") ? "Pass - No fees applied" : "Fail";
+        }
+        if (lateReturn && !damaged) {
+            return result.contains("Late fee") ? "Pass - Late fee applied" : "Fail";
+        }
+        if (!lateReturn && damaged) {
+            return result.contains("Damage fee") ? "Pass - Damage fee applied" : "Fail";
+        }
+        return result.contains("Late fee") && result.contains("Damage fee") ? "Pass - Late + Damage fee applied" : "Fail";
+    }
+
+    private void printTable2(String[][] data) {
+        for (String[] row : data) {
+            System.out.println(String.format("%-10s %-15s %-10s %-35s %-35s",
+                row[0], row[1], row[2], row[3], row[4]));
         }
     }
 }
