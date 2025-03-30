@@ -73,30 +73,6 @@
                 </dependency>
             </dependencies>
         </plugin>
-
-        <!-- PITest Plugin for Mutation Testing -->
-        <!-- <plugin>
-            <groupId>org.pitest</groupId>
-            <artifactId>pitest-maven</artifactId>
-            <version>1.9.0</version>
-            <configuration>
-                <targetClasses>
-                    <param>Library</param>
-                    <param>User</param>
-                    <param>Transaction</param>
-                    <param>Book</param>
-                </targetClasses>
-                <targetTests>
-                    <param>com.csci363.library.tests.*</param> 
-                </targetTests>
-                <excludedClasses>
-                    <param>org.pitest.*</param>
-                </excludedClasses>  
-                <outputFormats>
-                    <param>HTML</param>
-                </outputFormats>
-            </configuration>
-        </plugin> -->
     </plugins>
 </build>
 
