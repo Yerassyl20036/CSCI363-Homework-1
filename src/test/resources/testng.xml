@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="PriceComparisonSuite">
+    <test name="PriceComparisonTest">
+        <classes>
+            <class name="com.yourdomain.homework4.tests.PriceComparisonTest"/>
+        </classes>
+    </test>
+</suite>
